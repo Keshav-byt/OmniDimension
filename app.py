@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
-
-
 # Configuration for OmniDimension webhooks
 OMNIDIMENSION_WEBHOOK_URL = os.getenv('OMNIDIMENSION_WEBHOOK_URL', '')
 OMNIDIMENSION_API_KEY = os.environ.get('OMNIDIMENSION_API_KEY')
@@ -53,21 +51,21 @@ auction_data = {
             "id": "prod_2",
             "name": "1967 Ford Mustang Fastback",
             "description": "Fully restored classic Mustang with 390 V8 engine, stunning condition",
-            "starting_price": 25000000.00,
-            "current_highest_bid": 28500000.00,
+            "starting_price": 25000.00,
+            "current_highest_bid": 28500.00,
             "highest_bidder": "user_002",
             "auction_end_time": datetime.now() + timedelta(minutes=45),
             "bidding_history": [
                 {
                     "bid_id": "bid_002",
                     "bidder_id": "user_002",
-                    "amount": 26000000.00,
+                    "amount": 26000.00,
                     "timestamp": datetime.now() - timedelta(minutes=10)
                 },
                 {
                     "bid_id": "bid_003",
                     "bidder_id": "user_003",
-                    "amount": 28500000.00,
+                    "amount": 28500.00,
                     "timestamp": datetime.now() - timedelta(minutes=3)
                 }
             ],
@@ -80,27 +78,27 @@ auction_data = {
             "id": "prod_3",
             "name": "Original Van Gogh Sketch",
             "description": "Authenticated Van Gogh preparatory sketch with provenance documentation",
-            "starting_price": 15000000.00,
-            "current_highest_bid": 22000000.00,
+            "starting_price": 1500000.00,
+            "current_highest_bid": 2200000.00,
             "highest_bidder": "user_004",
             "auction_end_time": datetime.now() + timedelta(minutes=20),
             "bidding_history": [
                 {
                     "bid_id": "bid_004",
                     "bidder_id": "user_003",
-                    "amount": 16000000.00,
+                    "amount": 1600000.00,
                     "timestamp": datetime.now() - timedelta(minutes=15)
                 },
                 {
                     "bid_id": "bid_005", 
                     "bidder_id": "user_004",
-                    "amount": 18500000.00,
+                    "amount": 1850000.00,
                     "timestamp": datetime.now() - timedelta(minutes=12)
                 },
                 {
                     "bid_id": "bid_006",
                     "bidder_id": "user_005",
-                    "amount": 22000000.00,
+                    "amount": 2200000.00,
                     "timestamp": datetime.now() - timedelta(minutes=8)
                 }
             ],
@@ -215,144 +213,10 @@ def start_voice_session():
         phone_number = data.get('phone_number', '')
         session_id = data.get('session_id', str(uuid.uuid4()))
         
-        # Create new bid
-        new_bid = {
-            "bid_id": str(uuid.uuid4()),
-            "bidder_id": bidder_id,
-            "amount": bid_amount,
-            "timestamp": current_time
-        }
+        # Create user ID based on phone number or session ID
+        user_id = f"voice_user_{phone_number.replace('+', '').replace('-', '')}" if phone_number else f"voice_user_{session_id}"
         
-        # Store previous highest bid info for notifications
-        previous_highest_bid = product["current_highest_bid"]
-        previous_highest_bidder = product["highest_bidder"]
-        
-        # Update product data
-        product["current_highest_bid"] = bid_amount
-        product["highest_bidder"] = bidder_id
-        product["bidding_history"].append(new_bid)
-        product["total_bids"] += 1
-        
-        # Update user data
-        if bidder_id not in auction_data["users"]:
-            auction_data["users"][bidder_id] = {
-                "id": bidder_id,
-                "name": f"User {bidder_id}",
-                "bidding_history": [],
-                "total_spent": 0.0,
-                "active_bids": []
-            }
-        
-        user = auction_data["users"][bidder_id]
-        user["bidding_history"].append({
-            "product_id": product_id,
-            "product_name": product["name"],
-            "amount": bid_amount,
-            "timestamp": current_time.isoformat(),
-            "status": "winning" if bidder_id == product["highest_bidder"] else "outbid"
-        })
-        
-        # Add to active bids
-        user["active_bids"] = [bid for bid in user["active_bids"] if bid["product_id"] != product_id]
-        user["active_bids"].append({
-            "product_id": product_id,
-            "product_name": product["name"],
-            "amount": bid_amount,
-            "status": "winning"
-        })
-        
-        # Update previous highest bidder status
-        if previous_highest_bidder and previous_highest_bidder in auction_data["users"]:
-            prev_user = auction_data["users"][previous_highest_bidder]
-            for bid in prev_user["active_bids"]:
-                if bid["product_id"] == product_id:
-                    bid["status"] = "outbid"
-        
-        # Notify voice sessions about new bid
-        notify_voice_sessions({
-            "type": "new_bid",
-            "product_id": product_id,
-            "product_name": product["name"],
-            "amount": bid_amount,
-            "bidder_id": bidder_id,
-            "previous_amount": previous_highest_bid
-        })
-        
-        logger.info(f"New bid placed: ${bid_amount:.2f} on {product['name']} by {bidder_id}")
-        
-        return jsonify({
-            "success": True,
-            "message": f"Bid of ${bid_amount:.2f} placed successfully",
-            "bid_details": {
-                "bid_id": new_bid["bid_id"],
-                "amount": bid_amount,
-                "product_name": product["name"],
-                "new_highest_bid": bid_amount,
-                "previous_highest_bid": previous_highest_bid,
-                "total_bids": product["total_bids"],
-                "time_remaining": max(0, int((product["auction_end_time"] - current_time).total_seconds() / 60))
-            }
-        })
-        
-    except Exception as e:
-        logger.error(f"Error placing bid: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
-
-@app.route('/api/user/<user_id>/bids', methods=['GET'])
-def get_user_bids(user_id):
-    """Get all bids for a specific user"""
-    try:
-        if user_id not in auction_data["users"]:
-            return jsonify({"success": False, "error": "User not found"}), 404
-        
-        user = auction_data["users"][user_id]
-        
-        return jsonify({
-            "success": True,
-            "user_id": user_id,
-            "bidding_history": user["bidding_history"],
-            "active_bids": user["active_bids"],
-            "total_bids": len(user["bidding_history"])
-        })
-    except Exception as e:
-        logger.error(f"Error getting user bids: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
-
-# ===== WEBHOOK ENDPOINTS FOR OMNIDIMENSION =====
-
-@app.route('/api/webhook/omnidimension', methods=['POST'])
-def omnidimension_webhook():
-    """Receive webhooks from OmniDimension"""
-    try:
-        data = request.json
-        logger.info(f"Received OmniDimension webhook: {data}")
-        
-        # Process the webhook data
-        event_type = data.get("event_type", "")
-        session_id = data.get("session_id", "")
-        
-        if event_type == "call_started" and session_id:
-            # Auto-start session when call begins
-            phone_number = data.get("caller_number", "")
-            start_response = start_voice_session()
-            logger.info(f"Auto-started session for call: {session_id}")
-        
-        elif event_type == "call_ended" and session_id:
-            # Auto-end session when call ends
-            if session_id in active_voice_sessions:
-                active_voice_sessions.pop(session_id)
-                logger.info(f"Auto-ended session for call: {session_id}")
-        
-        return jsonify({"success": True, "message": "Webhook processed"})
-        
-    except Exception as e:
-        logger.error(f"Error processing OmniDimension webhook: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
-
-if __name__ == '__main__':    
-    app.run(debug=True, host='0.0.0.0', port=5000)
-    user_id = f"voice_user_{phone_number.replace('+', '').replace('-', '')}" if phone_number else f"voice_user_{session_id}"
-        
+        # Create user if doesn't exist
         if user_id not in auction_data["users"]:
             auction_data["users"][user_id] = {
                 "id": user_id,
@@ -730,6 +594,89 @@ def get_voice_user_status():
             "voice_message": "I'm sorry, I couldn't retrieve your status right now."
         }), 500
 
+@app.route('/api/user/<user_id>/bids', methods=['GET'])
+def get_user_bids(user_id):
+    """Get all bids for a specific user"""
+    try:
+        if user_id not in auction_data["users"]:
+            return jsonify({"success": False, "error": "User not found"}), 404
+        
+        user = auction_data["users"][user_id]
+        
+        return jsonify({
+            "success": True,
+            "user_id": user_id,
+            "bidding_history": user["bidding_history"],
+            "active_bids": user["active_bids"],
+            "total_bids": len(user["bidding_history"])
+        })
+    except Exception as e:
+        logger.error(f"Error getting user bids: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ===== WEBHOOK ENDPOINTS FOR OMNIDIMENSION =====
+
+@app.route('/api/webhook/omnidimension', methods=['POST'])
+def omnidimension_webhook():
+    """Receive webhooks from OmniDimension"""
+    try:
+        data = request.json
+        logger.info(f"Received OmniDimension webhook: {data}")
+        
+        # Process the webhook data
+        event_type = data.get("event_type", "")
+        session_id = data.get("session_id", "")
+        
+        if event_type == "call_started" and session_id:
+            # Auto-start session when call begins
+            phone_number = data.get("caller_number", "")
+            # Call start_voice_session internally
+            session_data = {
+                "phone_number": phone_number,
+                "session_id": session_id
+            }
+            start_voice_session_internal(session_data)
+            logger.info(f"Auto-started session for call: {session_id}")
+        
+        elif event_type == "call_ended" and session_id:
+            # Auto-end session when call ends
+            if session_id in active_voice_sessions:
+                active_voice_sessions.pop(session_id)
+                logger.info(f"Auto-ended session for call: {session_id}")
+        
+        return jsonify({"success": True, "message": "Webhook processed"})
+        
+    except Exception as e:
+        logger.error(f"Error processing OmniDimension webhook: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+def start_voice_session_internal(data):
+    """Internal function to start voice session (used by webhook)"""
+    phone_number = data.get('phone_number', '')
+    session_id = data.get('session_id', str(uuid.uuid4()))
+    
+    # Create user ID based on phone number or session ID
+    user_id = f"voice_user_{phone_number.replace('+', '').replace('-', '')}" if phone_number else f"voice_user_{session_id}"
+    
+    # Create user if doesn't exist
+    if user_id not in auction_data["users"]:
+        auction_data["users"][user_id] = {
+            "id": user_id,
+            "name": f"Voice User ({phone_number})" if phone_number else f"Voice User {session_id[:8]}",
+            "phone": phone_number,
+            "bidding_history": [],
+            "total_spent": 0.0,
+            "active_bids": []
+        }
+    
+    # Store session info
+    active_voice_sessions[session_id] = {
+        "user_id": user_id,
+        "phone_number": phone_number,
+        "start_time": datetime.now(),
+        "last_activity": datetime.now()
+    }
+
 # ===== ORIGINAL ENDPOINTS (kept for compatibility) =====
 
 @app.route('/api/auctions', methods=['GET'])
@@ -862,4 +809,160 @@ def place_bid(product_id):
                 "error": f"Bid must be at least ${minimum_bid:.2f} (current bid + $50 minimum increment)"
             }), 400
         
-        # Create
+        # Create new bid
+        new_bid = {
+            "bid_id": str(uuid.uuid4()),
+            "bidder_id": bidder_id,
+            "amount": bid_amount,
+            "timestamp": current_time
+        }
+        
+        # Store previous info for notifications
+        previous_highest_bid = product["current_highest_bid"]
+        previous_highest_bidder = product["highest_bidder"]
+        
+        # Update product data
+        product["current_highest_bid"] = bid_amount
+        product["highest_bidder"] = bidder_id
+        product["bidding_history"].append(new_bid)
+        product["total_bids"] += 1
+        
+        # Create user if doesn't exist
+        if bidder_id not in auction_data["users"]:
+            auction_data["users"][bidder_id] = {
+                "id": bidder_id,
+                "name": f"User {bidder_id}",
+                "phone": "",
+                "bidding_history": [],
+                "total_spent": 0.0,
+                "active_bids": []
+            }
+        
+        # Update user data
+        user = auction_data["users"][bidder_id]
+        user["bidding_history"].append({
+            "product_id": product_id,
+            "product_name": product["name"],
+            "amount": bid_amount,
+            "timestamp": current_time.isoformat(),
+            "status": "winning"
+        })
+        
+        # Update active bids
+        user["active_bids"] = [bid for bid in user["active_bids"] if bid["product_id"] != product_id]
+        user["active_bids"].append({
+            "product_id": product_id,
+            "product_name": product["name"],
+            "amount": bid_amount,
+            "status": "winning"
+        })
+        
+        # Notify previous highest bidder they've been outbid
+        if previous_highest_bidder and previous_highest_bidder != bidder_id:
+            if previous_highest_bidder in auction_data["users"]:
+                prev_user = auction_data["users"][previous_highest_bidder]
+                for bid in prev_user["active_bids"]:
+                    if bid["product_id"] == product_id:
+                        bid["status"] = "outbid"
+        
+        # Notify all sessions about new bid
+        notify_voice_sessions({
+            "type": "new_bid",
+            "product_id": product_id,
+            "product_name": product["name"],
+            "amount": bid_amount,
+            "bidder_id": bidder_id,
+            "previous_amount": previous_highest_bid
+        })
+        
+        logger.info(f"Bid placed: ${bid_amount:.2f} on {product['name']} by {bidder_id}")
+        
+        return jsonify({
+            "success": True,
+            "message": f"Bid of ${bid_amount:.2f} placed successfully!",
+            "bid_details": {
+                "bid_id": new_bid["bid_id"],
+                "amount": bid_amount,
+                "product_name": product["name"],
+                "new_highest_bid": bid_amount,
+                "previous_highest_bid": previous_highest_bid,
+                "total_bids": product["total_bids"]
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error placing bid: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/users', methods=['GET'])
+def get_all_users():
+    """Get all users and their bidding information"""
+    try:
+        users_copy = {}
+        for user_id, user in auction_data["users"].items():
+            user_copy = user.copy()
+            # Convert datetime objects in bidding history
+            bidding_history_copy = []
+            for bid in user_copy["bidding_history"]:
+                bid_copy = bid.copy()
+                if isinstance(bid.get("timestamp"), datetime):
+                    bid_copy["timestamp"] = bid["timestamp"].isoformat()
+                bidding_history_copy.append(bid_copy)
+            user_copy["bidding_history"] = bidding_history_copy
+            users_copy[user_id] = user_copy
+        
+        return jsonify({
+            "success": True,
+            "users": users_copy,
+            "total_users": len(users_copy)
+        })
+    except Exception as e:
+        logger.error(f"Error getting users: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/sessions', methods=['GET'])
+def get_active_sessions():
+    """Get all active voice sessions"""
+    try:
+        sessions_copy = {}
+        for session_id, session in active_voice_sessions.items():
+            session_copy = session.copy()
+            session_copy["start_time"] = session["start_time"].isoformat()
+            session_copy["last_activity"] = session["last_activity"].isoformat()
+            sessions_copy[session_id] = session_copy
+        
+        return jsonify({
+            "success": True,
+            "active_sessions": sessions_copy,
+            "total_sessions": len(sessions_copy)
+        })
+    except Exception as e:
+        logger.error(f"Error getting active sessions: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        "success": True,
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "active_auctions": len([p for p in auction_data["products"].values() if p["status"] == "active"]),
+        "active_sessions": len(active_voice_sessions),
+        "total_users": len(auction_data["users"])
+    })
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"success": False, "error": "Endpoint not found"}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"success": False, "error": "Internal server error"}), 500
+
+if __name__ == '__main__':
+    logger.info("Starting Voice Auction Backend Server...")
+    logger.info(f"Total auction products loaded: {len(auction_data['products'])}")
+    logger.info(f"OmniDimension webhook URL: {'Configured' if OMNIDIMENSION_WEBHOOK_URL else 'Not configured'}")
+    
+    app.run(host='0.0.0.0', port=5000, debug=True)
