@@ -351,7 +351,7 @@ def omnidimension_webhook():
 
 if __name__ == '__main__':    
     app.run(debug=True, host='0.0.0.0', port=5000)
-        user_id = f"voice_user_{phone_number.replace('+', '').replace('-', '')}" if phone_number else f"voice_user_{session_id}"
+    user_id = f"voice_user_{phone_number.replace('+', '').replace('-', '')}" if phone_number else f"voice_user_{session_id}"
         
         if user_id not in auction_data["users"]:
             auction_data["users"][user_id] = {
