@@ -349,70 +349,8 @@ def omnidimension_webhook():
         logger.error(f"Error processing OmniDimension webhook: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
-# ===== HEALTH CHECK AND STATUS ENDPOINTS =====
-
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    try:
-        current_time = datetime.now()
-        active_auctions = len([p for p in auction_data["products"].values() if p["status"] == "active"])
-        
-        return jsonify({
-            "status": "healthy",
-            "timestamp": current_time.isoformat(),
-            "active_sessions": len(active_voice_sessions),
-            "active_auctions": active_auctions,
-            "total_users": len(auction_data["users"])
-        })
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        return jsonify({"status": "unhealthy", "error": str(e)}), 500
-
-@app.route('/api/status', methods=['GET'])
-def get_system_status():
-    """Get detailed system status"""
-    try:
-        current_time = datetime.now()
-        
-        # Calculate auction statistics
-        total_auctions = len(auction_data["products"])
-        active_auctions = len([p for p in auction_data["products"].values() if p["status"] == "active"])
-        ended_auctions = total_auctions - active_auctions
-        
-        # Calculate bidding statistics
-        total_bids = sum(p["total_bids"] for p in auction_data["products"].values())
-        total_bid_value = sum(p["current_highest_bid"] for p in auction_data["products"].values())
-        
-        # Session statistics
-        active_sessions_count = len(active_voice_sessions)
-        
-        return jsonify({
-            "success": True,
-            "timestamp": current_time.isoformat(),
-            "auction_stats": {
-                "total_auctions": total_auctions,
-                "active_auctions": active_auctions,
-                "ended_auctions": ended_auctions,
-                "total_bids": total_bids,
-                "total_bid_value": total_bid_value
-            },
-            "session_stats": {
-                "active_sessions": active_sessions_count,
-                "total_users": len(auction_data["users"])
-            },
-            "system_config": {
-                "webhook_configured": bool(OMNIDIMENSION_WEBHOOK_URL),
-                "api_key_configured": bool(OMNIDIMENSION_API_KEY)
-            }
-        })
-        
-    except Exception as e:
-        logger.error(f"Error getting system status: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
-
 if __name__ == '__main__':    
-    app.run(debug=True, host='0.0.0.0', port=5000) or get user based on phone number
+    app.run(debug=True, host='0.0.0.0', port=5000)
         user_id = f"voice_user_{phone_number.replace('+', '').replace('-', '')}" if phone_number else f"voice_user_{session_id}"
         
         if user_id not in auction_data["users"]:
