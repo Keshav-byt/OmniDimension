@@ -32,89 +32,89 @@ auction_data = {
             "id": "prod_1",
             "name": "Vintage Rolex Submariner",
             "description": "Rare 1965 Rolex Submariner in excellent condition with original box and papers",
-            "starting_price": 5000.00,
-            "current_highest_bid": 5500.00,
+            "starting_price": 50000.00,
+            "current_highest_bid": 55000.00,
             "highest_bidder": "user_001",
             "auction_end_time": datetime.now() + timedelta(minutes=30),
             "bidding_history": [
                 {
                     "bid_id": "bid_001",
                     "bidder_id": "user_001",
-                    "amount": 5500.00,
+                    "amount": 55000.00,
                     "timestamp": datetime.now() - timedelta(minutes=5)
                 }
             ],
             "total_bids": 1,
             "status": "active",
             "category": "watches",
-            "image_url": "https://example.com/rolex.jpg"
+            "image_url": "https://awadwatches.com/wp-content/uploads/2019/03/1965_vintage_rolex_datejust_1601_rare_14k_gold_roman_dial_swiss_only_1.jpeg"
         },
         "prod_2": {
             "id": "prod_2",
             "name": "1967 Ford Mustang Fastback",
             "description": "Fully restored classic Mustang with 390 V8 engine, stunning condition",
-            "starting_price": 25000.00,
-            "current_highest_bid": 28500.00,
+            "starting_price": 25000000.00,
+            "current_highest_bid": 28500000.00,
             "highest_bidder": "user_002",
             "auction_end_time": datetime.now() + timedelta(minutes=45),
             "bidding_history": [
                 {
                     "bid_id": "bid_002",
                     "bidder_id": "user_002",
-                    "amount": 26000.00,
+                    "amount": 26000000.00,
                     "timestamp": datetime.now() - timedelta(minutes=10)
                 },
                 {
                     "bid_id": "bid_003",
                     "bidder_id": "user_003",
-                    "amount": 28500.00,
+                    "amount": 28500000.00,
                     "timestamp": datetime.now() - timedelta(minutes=3)
                 }
             ],
             "total_bids": 2,
             "status": "active",
             "category": "vehicles",
-            "image_url": "https://example.com/mustang.jpg"
+            "image_url": "https://bringatrailer.com/wp-content/uploads/2019/05/1967_ford_mustang_fastback_1561126084a7ce40810bf523f006_exterior.jpg"
         },
         "prod_3": {
             "id": "prod_3",
             "name": "Original Van Gogh Sketch",
             "description": "Authenticated Van Gogh preparatory sketch with provenance documentation",
-            "starting_price": 15000.00,
-            "current_highest_bid": 22000.00,
+            "starting_price": 15000000.00,
+            "current_highest_bid": 22000000.00,
             "highest_bidder": "user_004",
             "auction_end_time": datetime.now() + timedelta(minutes=20),
             "bidding_history": [
                 {
                     "bid_id": "bid_004",
                     "bidder_id": "user_003",
-                    "amount": 16000.00,
+                    "amount": 16000000.00,
                     "timestamp": datetime.now() - timedelta(minutes=15)
                 },
                 {
                     "bid_id": "bid_005", 
                     "bidder_id": "user_004",
-                    "amount": 18500.00,
+                    "amount": 18500000.00,
                     "timestamp": datetime.now() - timedelta(minutes=12)
                 },
                 {
                     "bid_id": "bid_006",
                     "bidder_id": "user_005",
-                    "amount": 22000.00,
+                    "amount": 22000000.00,
                     "timestamp": datetime.now() - timedelta(minutes=8)
                 }
             ],
             "total_bids": 3,
             "status": "active",
             "category": "art",
-            "image_url": "https://example.com/vangogh.jpg"
+            "image_url": "https://image.invaluable.com/housePhotos/Gallery320/16/665116/H19737-L198711707.jpg"
         }
     },
     "users": {
         "voice_user_001": {
             "id": "voice_user_001",
             "name": "Voice User",
-            "phone": "+1234567890",
+            "phone": "+918439473928",
             "bidding_history": [],
             "total_spent": 0.0,
             "active_bids": []
