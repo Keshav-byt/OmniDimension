@@ -17,9 +17,13 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
+
+
 # Configuration for OmniDimension webhooks
 OMNIDIMENSION_WEBHOOK_URL = os.getenv('OMNIDIMENSION_WEBHOOK_URL', '')
-OMNIDIMENSION_API_KEY = os.getenv('OMNIDIMENSION_API_KEY', '')
+OMNIDIMENSION_API_KEY = os.environ.get('OMNIDIMENSION_API_KEY')
+if not OMNIDIMENSION_API_KEY:
+    raise ValueError("OMNIDIMENSION_API_KEY environment variable is required")
 
 # In-memory auction data with more realistic data
 auction_data = {
