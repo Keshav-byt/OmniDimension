@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, User, Lock, Clock, Tag, X, Mic, Heart, Briefcase, Paintbrush, Music, Camera, Tv } from 'lucide-react';
 
 // --- Configuration ---
-const API_BASE_URL = 'https://omnidimension.onrender.com';
+const API_BASE_URL = '/api';
 
 // --- API Helper Functions ---
 // In a real app, you might use a library like axios, but fetch is fine.
