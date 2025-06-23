@@ -19,10 +19,11 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration for OmniDimension webhooks
-OMNIDIMENSION_WEBHOOK_URL = os.getenv('OMNIDIMENSION_WEBHOOK_URL', '')
-OMNIDIMENSION_API_KEY = os.environ.get('OMNIDIMENSION_API_KEY')
+OMNIDIMENSION_WEBHOOK_URL = os.getenv('OMNIDIMENSION_WEBHOOK_URL', 'https://backend.omnidim.io/web_widget.js?secret_key=882b84771c2d5cac884578217aaad742')
+OMNIDIMENSION_API_KEY = os.getenv('OMNIDIMENSION_API_KEY', 'pZ3frbfFOsjvsvlxBL1le7-YLcCiWSqas12v2CiwC8k')
+'''OMNIDIMENSION_API_KEY = os.environ.get('OMNIDIMENSION_API_KEY')
 if not OMNIDIMENSION_API_KEY:
-    raise ValueError("OMNIDIMENSION_API_KEY environment variable is required")
+    raise ValueError("OMNIDIMENSION_API_KEY environment variable is required")'''
 
 # In-memory auction data with more realistic data
 auction_data = {
@@ -124,7 +125,7 @@ auction_data = {
 # Global state for tracking active voice sessions
 active_voice_sessions = {}
 
-def send_omnidimension_webhook(session_id: str, message: str, data: dict = None):
+def send_omnidimension_webhook(session_id: str, message: str, data: Optional[dict] = None):
     """Send webhook notification to OmniDimension for a specific session"""
     if not OMNIDIMENSION_WEBHOOK_URL:
         logger.warning("OmniDimension webhook URL not configured")
@@ -625,12 +626,12 @@ def omnidimension_webhook():
         logger.info(f"Received OmniDimension webhook: {data}")
         
         # Process the webhook data
-        event_type = data.get("event_type", "")
-        session_id = data.get("session_id", "")
+        event_type = (data or {}).get("event_type", "")
+        session_id = (data or {}).get("session_id", "")
         
         if event_type == "call_started" and session_id:
             # Auto-start session when call begins
-            phone_number = data.get("caller_number", "")
+            phone_number = (data or {}).get("caller_number", "")
             # Call start_voice_session internally
             session_data = {
                 "phone_number": phone_number,
@@ -689,6 +690,7 @@ def get_all_auctions():
         
         for product_id, product in auction_data["products"].items():
             product_copy = product.copy()
+            product_copy["category"] = product["category"].title()
             time_remaining = product["auction_end_time"] - current_time
             
             if time_remaining.total_seconds() > 0 and product["status"] == "active":
@@ -940,18 +942,6 @@ def get_active_sessions():
     except Exception as e:
         logger.error(f"Error getting active sessions: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
-
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    """Health check endpoint"""
-    return jsonify({
-        "success": True,
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "active_auctions": len([p for p in auction_data["products"].values() if p["status"] == "active"]),
-        "active_sessions": len(active_voice_sessions),
-        "total_users": len(auction_data["users"])
-    })
 
 @app.errorhandler(404)
 def not_found(error):
