@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+ximport React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, User, Lock, Clock, Tag, X, Mic, Heart, Briefcase, Paintbrush, Music, Tv } from 'lucide-react';
 
 // --- Configuration ---
@@ -225,7 +225,7 @@ const CategoryFilter = ({ selectedCategory, setSelectedCategory }) => {
 };
 
 const AuctionCard = ({ auction, onBidClick }) => {
-    const { id, name, category, current_price, next_bid, bids, end_time, image_url, status } = auction;
+    const {name, category, current_price, next_bid, bids, end_time, image_url, status } = auction;
     const isEnded = new Date(end_time) < new Date() || status === 'ended';
     
     let statusBadge;
