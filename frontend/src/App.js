@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, User, Lock, Clock, Tag, X, Mic, Heart, Briefcase, Paintbrush, Music, Camera, Tv } from 'lucide-react';
+import { Search, User, Lock, Clock, Tag, X, Mic, Heart, Briefcase, Paintbrush, Music, Tv } from 'lucide-react';
 
 // --- Configuration ---
 const API_BASE_URL = '/api';
@@ -280,14 +280,14 @@ const Header = ({ onAuthClick, onHowItWorksClick, onAuctionsClick, authInfo, set
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
                 <div className="flex-shrink-0">
-                    <a href="#" onClick={(e) => { e.preventDefault(); onAuctionsClick(); }} className="text-2xl font-bold text-indigo-600">
+                    <a href="/" onClick={(e) => { e.preventDefault(); onAuctionsClick(); }} className="text-2xl font-bold text-indigo-600">
                         BidHub
                     </a>
                 </div>
                 <nav className="hidden md:flex items-center space-x-8">
-                    <a href="#" onClick={(e) => { e.preventDefault(); onAuctionsClick(); }} className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Auctions</a>
-                    <a href="#" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Categories</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); onHowItWorksClick(); }} className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">How It Works</a>
+                    <a href="/" onClick={(e) => { e.preventDefault(); onAuctionsClick(); }} className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Auctions</a>
+                    <a href="/" className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">Categories</a>
+                    <a href="/" onClick={(e) => { e.preventDefault(); onHowItWorksClick(); }} className="text-gray-600 hover:text-indigo-600 font-medium transition-colors">How It Works</a>
                 </nav>
                 <div className="flex items-center space-x-2">
                     {authInfo ? (
