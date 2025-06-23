@@ -206,10 +206,6 @@ threading.Thread(target=check_auction_expiry, daemon=True).start()
 
 # ===== SESSION MANAGEMENT ENDPOINTS =====
 
-@app.route('/')
-def index():
-    return jsonify({"success": True, "message": "OmniDimension Voice Auction API is running."})
-
 @app.route('/api/session/start', methods=['POST'])
 def start_voice_session():
     """Start a new voice session for a user"""
