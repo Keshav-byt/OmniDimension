@@ -9,6 +9,7 @@ import logging
 import requests
 import os
 from typing import Dict, List, Optional
+from flask import send_from_directory
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -963,6 +964,14 @@ def not_found(error):
 @app.errorhandler(500)
 def internal_error(error):
     return jsonify({"success": False, "error": "Internal server error"}), 500
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react(path):
+    if path != "" and os.path.exists(os.path.join('build', path)):
+        return send_from_directory('build', path)
+    else:
+        return send_from_directory('build', 'index.html')
 
 if __name__ == '__main__':
     logger.info("Starting Voice Auction Backend Server...")
