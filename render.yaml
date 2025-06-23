@@ -1,11 +1,13 @@
 services:
   - type: web
-    name: auction-backend
+    name: omnidimension-auction
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python app.py"
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn app:app
     envVars:
-      - key: FLASK_ENV
-        value: production
       - key: OMNIDIMENSION_API_KEY
-        sync: false
+        value: pZ3frbfFOsjvsvlxBL1le7-YLcCiWSqas12v2CiwC8k
+      - key: OMNIDIMENSION_WEBHOOK_URL
+        value: https://backend.omnidim.io/web_widget.js?secret_key=882b84771c2d5cac884578217aaad742
+    plan: free
+    autoDeploy: true
