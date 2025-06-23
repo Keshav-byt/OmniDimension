@@ -9,15 +9,15 @@ const API_BASE_URL = '/api';
 const api = {
   getAuctions: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auctions`);
+      const response = await fetch("/api/auctions");
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       // Assuming the API returns an array of auction objects or an object containing them
       const data = await response.json();
       
       // Check if data is an object with an 'auctions' property which is an array
-      if (data && Array.isArray(data.auctions)) {
-        return data.auctions;
-      }
+      if (data && data.products && typeof data.products === 'object') {
+        return Object.values(data.products);
+    }
       
       // Check if data itself is an array
       if(Array.isArray(data) && data.length > 0) {
@@ -451,43 +451,57 @@ export default function App() {
     const [currentView, setCurrentView] = useState('auctions'); // 'auctions' or 'howitworks'
 
     useEffect(() => {
-        const fetchAuctions = async () => {
-            try {
-                setIsLoading(true);
-                const data = await api.getAuctions();
-                
-                // Ensure we have a valid array before trying to sort it
-                if (Array.isArray(data)) {
-                    // Sort by end time, soonest first, but keep ended ones at the bottom
-                    data.sort((a, b) => {
-                        const aEnded = new Date(a.end_time) < new Date();
-                        const bEnded = new Date(b.end_time) < new Date();
-                        if (aEnded && !bEnded) return 1;
-                        if (!aEnded && bEnded) return -1;
-                        return new Date(a.end_time) - new Date(b.end_time);
-                    });
-                    setAuctions(data);
-                } else {
-                    // If data is not an array (e.g., from fallback), just set it
-                    setAuctions(mockAuctions); // Fallback to a known good array
-                }
+  const fetchAuctions = async () => {
+    try {
+      setIsLoading(true);
+      const data = await api.getAuctions();
 
-                setError(null);
-            } catch (err) {
-                setError(err.message);
-                setAuctions(mockAuctions); // Use mock data on error
-            } finally {
-                setIsLoading(false);
-            }
+      if (Array.isArray(data)) {
+        const transformed = data.map(item => {
+            const basePrice = Number(item.current_highest_bid ?? item.starting_price ?? 0);
+            return {
+                id: item.id,
+                name: item.name,
+                category: item.category?.toString().trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase()), // optional: normalize title case
+                image_url: item.image_url,
+                end_time: item.auction_end_time,
+                status: item.status,
+                current_price: basePrice,
+                next_bid: basePrice + 50,
+                bids: item.total_bids ?? 0
+            };
+        });
+
+        // Sort: active auctions by soonest end time; ended at bottom
+        transformed.sort((a, b) => {
+          const aEnded = new Date(a.end_time) < new Date();
+          const bEnded = new Date(b.end_time) < new Date();
+          if (aEnded && !bEnded) return 1;
+          if (!aEnded && bEnded) return -1;
+          return new Date(a.end_time) - new Date(b.end_time);
+        });
+
+            setAuctions(transformed);
+        } else {
+        // Fallback: use mock data
+            setAuctions(mockAuctions);
+        }
+
+            setError(null);
+        }   catch (err) {
+            setError(err.message);
+            setAuctions(mockAuctions); // fallback
+        } finally {
+            setIsLoading(false);
+        }
         };
 
         fetchAuctions();
-        
-        // Optional: Set up polling to refresh auction data periodically
-        const intervalId = setInterval(fetchAuctions, 60000); // every 60 seconds
-        return () => clearInterval(intervalId);
 
-    }, []);
+  // Refresh every 60 seconds
+        const intervalId = setInterval(fetchAuctions, 60000);
+        return () => clearInterval(intervalId);
+        }, []);
 
     const handleAuthClick = (type) => { // type can be 'login' or 'register'
         setIsAuthModalOpen(true);
