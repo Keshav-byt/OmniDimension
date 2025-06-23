@@ -1,4 +1,4 @@
-ximport React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, {useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, User, Lock, Clock, Tag, X, Mic, Heart, Briefcase, Paintbrush, Music, Tv } from 'lucide-react';
 
 // --- Configuration ---
