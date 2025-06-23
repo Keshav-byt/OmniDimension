@@ -19,11 +19,10 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration for OmniDimension webhooks
-OMNIDIMENSION_WEBHOOK_URL = os.getenv('OMNIDIMENSION_WEBHOOK_URL', 'https://backend.omnidim.io/web_widget.js?secret_key=882b84771c2d5cac884578217aaad742')
-OMNIDIMENSION_API_KEY = os.getenv('OMNIDIMENSION_API_KEY', 'pZ3frbfFOsjvsvlxBL1le7-YLcCiWSqas12v2CiwC8k')
-'''OMNIDIMENSION_API_KEY = os.environ.get('OMNIDIMENSION_API_KEY')
+OMNIDIMENSION_WEBHOOK_URL = os.getenv('OMNIDIMENSION_WEBHOOK_URL', '')
+OMNIDIMENSION_API_KEY = os.environ.get('OMNIDIMENSION_API_KEY')
 if not OMNIDIMENSION_API_KEY:
-    raise ValueError("OMNIDIMENSION_API_KEY environment variable is required")'''
+    raise ValueError("OMNIDIMENSION_API_KEY environment variable is required")
 
 # In-memory auction data with more realistic data
 auction_data = {
